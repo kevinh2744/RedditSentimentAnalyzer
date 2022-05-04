@@ -2,10 +2,11 @@ package RedditSentimentAnalyzer;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.*;
+
+import org.apache.log4j.BasicConfigurator;
+import yahoofinance.histquotes.HistoricalQuote;
 
 import static RedditSentimentAnalyzer.SentimentAnalyzer.*;
 
@@ -35,6 +36,9 @@ public class Main {
 
     public static void main(String[] args) {
 
+        //Initialize log4j system
+        BasicConfigurator.configure();
+
         SimpleDateFormat sdformat = new SimpleDateFormat("yyyy-MM-dd");
         TickerAnalysis analysis = new TickerAnalysis();
 
@@ -46,10 +50,19 @@ public class Main {
                 //EDIT DATE INFO HERE
                 Date d1 = sdformat.parse("2021-11-01");
                 Date d2 = sdformat.parse("2021-12-31");
+                Date d3 = sdformat.parse("2022-02-28");
 
                 int sentiment = analysis.getAverageSentimentOfTicker(ticker, d1, d2);
 
                 printTickerInfo(ticker, sentiment, d1, d2);
+
+                List<HistoricalQuote> appleHistQuotes = StockHistoryAnalyzer.getHist(ticker, d2, d3);
+                BigDecimal reddit = appleHistQuotes.get(0).getClose();
+                BigDecimal current = appleHistQuotes.get(appleHistQuotes.size() - 1).getClose();
+                BigDecimal difference = current.subtract(reddit);
+
+                System.out.println("\nThe difference between the current price and the price at the" +
+                        "time of the last reddit post is " + difference.toPlainString());
 
             } catch (ParseException e) {
                 e.printStackTrace();
